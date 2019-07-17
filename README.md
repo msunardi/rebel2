@@ -1,4 +1,4 @@
-# Robot Expressive Behavior Logic (REBeL)
+# Robot Expressive Behavior Language (REBeL) - ReBeX (Robot Behavior Expression) - Behavior Expressions for Robots (BEER)
 
 A framework to compose robot behaviors using algebraic expressions.
 
@@ -37,6 +37,10 @@ Possible outcomes:
 - `left --> right --> end`
 - `left --> right --> forward --> end`
 
+The meaning of the outcomes (in order):
+-  turn left once and stop
+-  turn left, turn right, and stop
+-  turn left, turn right, go forward, and stop
 
 ## Union
 Operator: `'+'`
@@ -50,9 +54,9 @@ Possible outcomes:
 - `right --> end`
 - `forward --> end`
 
-Union operation always only return one of the arguments. By default, the union operation works probabilistically, and the probability for each argument is spread uniformly.
+Union operation always __only return one of the arguments__.
 
-For example, the probability for each argument in the above expression is 1/3.
+By default, the union operation works probabilistically, and the probability for each argument is spread uniformly. For example, in the above expression has three operands, so the default probability for each operand is 1/3.
 
 To specify individual probabilities for each argument, provide a list of probabilities. For example, to give `left` probability `0.2`, `right` to `0.3`, and `forward` to `0.5`.
 
@@ -76,7 +80,7 @@ Possible outcomes:
 - `left --> left --> end`
 - `left --> ... --> left --> end`
 
-To force a deterministic number of loop/repetition, e.g. "loop *at least* x number of times", specify the probability > 1. For example, to repeat the `left` behavior *at least 2 times*:
+To force a deterministic number of loop/repetition, e.g. "loop *at least* `X` number of times", specify the probability > 1. For example, to repeat the `left` behavior __at least 2 times__:
 
 `'(* left 2.3)'`
 
@@ -91,8 +95,22 @@ The Value can be *direct commands* or another expression. Examples of direct con
   - Turn LED on: `{'led': true}`
   - Speak: `{'say': 'hello world!'}`
 
-**IMPORTANT**: The format of the commands depends on the format of the interfaces to your robot. So if you want to use/extend REBeL, you need to implement the interface between the result of REBeL parsing and to your robot.
+### To add new actions to the vocabulary
+Use the `.add(<name>, <value>)` method on the `vocab` object. `Name` is of type `string`, `Value` is restricted; a value of type `string` is considered an expression so it will be recursively evaluated, and non-`string` values such as `dictionary`, `float`, `list`, etc. will be the end values (will not be re-evaluated).
 
+Examples
+```python
+from mjp import vocab
+
+vocab.add('foo', [0.3, 0.5, 0.5, 1.0])  # Joint position for 4 DOF with name 'foo'
+vocab.add('say_hello', {'say': 'hello world!'})  # Command to say 'hello world!' with name 'say_hello'
+vocab.add('led_on', {'led': true})  # Command to turn on a LED with name 'led_on'
+
+vocab.add('foo_hello_led', '(& foo say_hello led_on)')
+```
+
+
+**IMPORTANT**: The format of the commands depends on the format of the interfaces to your robot. So if you want to use/extend REBeL, you have to implement the interface between the result of REBeL parsing and to your robot yourself.
 
 
 ## Recursive Evaluation
@@ -106,6 +124,18 @@ Possible outcomes:
 - `forward --> end `
 
 An expression can also be saved into another entry in the vocabulary and given a name, and can be called by the name it is assigned to.
+
+Example:
+```python
+import rebel_parser as rp
+import vocab
+
+vocab.add('left_right', '(& left right)')  # First, add to vocabulary
+combined = '(+ left_right right forward)'  # Use it in another expression
+
+rp.parse(combined)  # Parsing this expression will give the same result as before
+
+```
 
 Currently, there is no specialized safety measure implemented to cause infinite recursion -- it will be caught by Python's interpreter.
 

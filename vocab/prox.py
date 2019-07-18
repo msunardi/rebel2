@@ -1,4 +1,4 @@
-import xml
+from lxml import etree
 
 position_library = {
     'initial_stand': [387, 641, 460, 563, 452, 572, 510, 510, -1, 510, 494, 521, 498, 514, 531, 488, 508, 507, 509, -1],
@@ -288,5 +288,17 @@ acts = ['foo', 'bar', 'baz', 'right_arm', 'left_arm', 'turn_head_left', 'up', 'd
         'wave1', 'wave2', 'onguard', 'why', 'jumping', 'leila_dances', 'police_freeze', 'muscle_flex', 'yes', 'wow', 'yawn',\
         'brah', 'clap', 'oops', 'search', 'up', 'down', 'left', 'right']
 
+def create_vocab():
+    root = etree.Element('rml')
+    keys = sorted(position_library.keys())
+    for key in keys:
+        action = etree.SubElement(root, 'action')
+        etree.SubElement(action, 'name').text = key
+        value = position_library[key]
+        etree.SubElement(action, 'value').text = str(value) if type(value) != str else value
+    tree = etree.ElementTree(root)
+    tree.write('vocabulary.xml', pretty_print=True)
+
 if __name__ == "__main__":
-    print(position_library.keys())
+    # print(position_library.keys())
+    create_vocab()

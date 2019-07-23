@@ -3,9 +3,11 @@ from numpy.random import choice as npchoice
 import numpy as np
 import pandas as pd
 
-from utils import rprint
+import utils
 import action_processors as ap
 import ast
+
+rprint = utils.rprint
 
 DEBUG = False
 
@@ -248,6 +250,7 @@ def standard_env():
         'number?': lambda x: isinstance(x, Number),
         'list?': lambda x: isinstance(x, List)
         })
+    print("ENV: {}".format(env))
     return env
 
 global_env = standard_env()

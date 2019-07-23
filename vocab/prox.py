@@ -297,7 +297,7 @@ def create_vocab():
         value = position_library[key]
         etree.SubElement(action, 'value').text = str(value) if type(value) != str else value
     tree = etree.ElementTree(root)
-    tree.write('vocabulary.xml', pretty_print=True, xml_declaration=True, encoding="utf8")
+    tree.write('vocabulary.xml', pretty_print=True)#, xml_declaration=True, encoding="utf8")
 
 if __name__ == "__main__":
     # print(position_library.keys())
